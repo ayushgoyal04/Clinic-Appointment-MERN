@@ -1,0 +1,7 @@
+# For reference only: Node.js dependencies are managed by package.json
+express
+mongoose
+dotenv
+bcryptjs
+jsonwebtoken
+cors
