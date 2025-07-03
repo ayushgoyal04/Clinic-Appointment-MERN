@@ -3,10 +3,14 @@ const express = require('express');
 const router = express.Router();
 const billingController = require('../controllers/billingController');
 
-router.post('/', billingController.createBill);
-router.get('/', billingController.getBills);
-router.get('/:id', billingController.getBillById);
-router.put('/:id', billingController.updateBill);
-router.delete('/:id', billingController.deleteBill);
+
+const { protect, allowRoles } = require('../auth/rbac');
+
+// Only admin and receptionist can create/update/delete bills
+router.post('/', protect, allowRoles('admin', 'receptionist'), billingController.createBill);
+router.get('/', protect, billingController.getBills);
+router.get('/:id', protect, billingController.getBillById);
+router.put('/:id', protect, allowRoles('admin', 'receptionist'), billingController.updateBill);
+router.delete('/:id', protect, allowRoles('admin', 'receptionist'), billingController.deleteBill);
 
 module.exports = router;
