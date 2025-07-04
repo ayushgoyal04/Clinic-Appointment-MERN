@@ -1,25 +1,75 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
+import { getDoctors, createAppointment } from '@/lib/api';
+
+
 const AppointmentForm = () => {
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    patientFirstName: '',
+    patientLastName: '',
     department: '',
-    doctor: '',
+    doctorId: '',
     date: '',
     time: '',
     email: '',
     phone: ''
   });
+  const [doctors, setDoctors] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState('');
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // TODO: Replace with real auth token logic
+  const token = localStorage.getItem('token') || '';
+
+  useEffect(() => {
+    getDoctors(token)
+      .then(res => setDoctors(res.data))
+      .catch(() => setDoctors([]));
+  }, [token]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Appointment form submitted:', formData);
-    // Handle form submission here
+    setLoading(true);
+    setSuccess('');
+    setError('');
+    try {
+      // Find doctor object
+      const doctor = doctors.find(d => d._id === formData.doctorId);
+      // Compose appointment payload
+      const payload = {
+        patient: {
+          first_name: formData.patientFirstName,
+          last_name: formData.patientLastName,
+          email: formData.email,
+          phone: formData.phone
+        },
+        doctor_id: formData.doctorId,
+        appointment_date: formData.date,
+        appointment_time: formData.time,
+        department: formData.department
+      };
+      await createAppointment(payload, token);
+      setSuccess('Appointment booked successfully!');
+      setFormData({
+        patientFirstName: '',
+        patientLastName: '',
+        department: '',
+        doctorId: '',
+        date: '',
+        time: '',
+        email: '',
+        phone: ''
+      });
+    } catch (err: any) {
+      setError(err?.response?.data?.error || 'Failed to book appointment.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -27,33 +77,34 @@ const AppointmentForm = () => {
       <h2 className="text-2xl font-bold text-gray-900 mb-2">Make an appointment</h2>
       <p className="text-gray-600 mb-6">
         Our healthcare professionals are dedicated to providing the best possible care
-        for patients and are supported by complete radiology and imaging services 
+        for patients and are supported by complete radiology and imaging services
         provided at Care point.
       </p>
-      
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <p className="text-sm text-gray-500 mb-4">Fields marked with an * are required</p>
-        
+        {success && <div className="text-green-600 font-medium">{success}</div>}
+        {error && <div className="text-red-600 font-medium">{error}</div>}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="firstName">First Name *</Label>
+            <Label htmlFor="patientFirstName">First Name *</Label>
             <Input
-              id="firstName"
+              id="patientFirstName"
               type="text"
               required
-              value={formData.firstName}
-              onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+              value={formData.patientFirstName}
+              onChange={(e) => setFormData({ ...formData, patientFirstName: e.target.value })}
               className="mt-1"
             />
           </div>
           <div>
-            <Label htmlFor="lastName">Last Name *</Label>
+            <Label htmlFor="patientLastName">Last Name *</Label>
             <Input
-              id="lastName"
+              id="patientLastName"
               type="text"
               required
-              value={formData.lastName}
-              onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+              value={formData.patientLastName}
+              onChange={(e) => setFormData({ ...formData, patientLastName: e.target.value })}
               className="mt-1"
             />
           </div>
@@ -62,9 +113,9 @@ const AppointmentForm = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="department">Department *</Label>
-            <Select value={formData.department} onValueChange={(value) => setFormData({...formData, department: value})}>
+            <Select value={formData.department} onValueChange={(value) => setFormData({ ...formData, department: value })}>
               <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Cardiology" />
+                <SelectValue placeholder="Select Department" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="cardiology">Cardiology</SelectItem>
@@ -76,16 +127,19 @@ const AppointmentForm = () => {
             </Select>
           </div>
           <div>
-            <Label htmlFor="doctor">Doctor *</Label>
-            <Select value={formData.doctor} onValueChange={(value) => setFormData({...formData, doctor: value})}>
+            <Label htmlFor="doctorId">Doctor *</Label>
+            <Select value={formData.doctorId} onValueChange={(value) => setFormData({ ...formData, doctorId: value })}>
               <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Christopher Barnes" />
+                <SelectValue placeholder="Select Doctor" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="christopher-barnes">Christopher Barnes</SelectItem>
-                <SelectItem value="sarah-johnson">Sarah Johnson</SelectItem>
-                <SelectItem value="michael-davis">Michael Davis</SelectItem>
-                <SelectItem value="emma-wilson">Emma Wilson</SelectItem>
+                {doctors.length === 0 ? (
+                  <SelectItem value="no-doctors" disabled>No doctors found</SelectItem>
+                ) : (
+                  doctors.map((doc) => (
+                    <SelectItem key={doc._id} value={doc._id}>{doc.first_name} {doc.last_name}</SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -99,7 +153,7 @@ const AppointmentForm = () => {
               type="date"
               required
               value={formData.date}
-              onChange={(e) => setFormData({...formData, date: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
               className="mt-1"
             />
           </div>
@@ -110,7 +164,7 @@ const AppointmentForm = () => {
               type="time"
               required
               value={formData.time}
-              onChange={(e) => setFormData({...formData, time: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, time: e.target.value })}
               className="mt-1"
             />
           </div>
@@ -123,7 +177,7 @@ const AppointmentForm = () => {
               id="email"
               type="email"
               value={formData.email}
-              onChange={(e) => setFormData({...formData, email: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               className="mt-1"
             />
           </div>
@@ -133,17 +187,18 @@ const AppointmentForm = () => {
               id="phone"
               type="tel"
               value={formData.phone}
-              onChange={(e) => setFormData({...formData, phone: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               className="mt-1"
             />
           </div>
         </div>
 
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
           className="bg-green-600 hover:bg-green-700 text-white px-8 py-2 rounded-md font-medium mt-6"
+          disabled={loading}
         >
-          Submit
+          {loading ? 'Booking...' : 'Submit'}
         </Button>
       </form>
     </div>
