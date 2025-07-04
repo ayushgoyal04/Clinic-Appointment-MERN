@@ -11,18 +11,20 @@ const register = async (req, res) => {
   }
 };
 
+
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const { user, token } = await userService.loginUser({ email, password });
     res.status(200).json({ message: 'Login successful', token, user });
-    // Get current user profile
-    const me = async (req, res) => {
-      res.status(200).json({ user: req.user });
-    };
   } catch (err) {
     res.status(401).json({ message: err.message });
   }
+};
+
+// Get current user profile
+const me = async (req, res) => {
+  res.status(200).json({ user: req.user });
 };
 
 const logout = async (req, res) => {
@@ -38,5 +40,5 @@ module.exports = {
   register,
   login,
   logout,
-  me
+  me,
 };

@@ -17,9 +17,15 @@ app.use('/api/appointments', require('./routes/appointmentRoutes'));
 app.use('/api/medical-records', require('./routes/medicalRecordRoutes'));
 app.use('/api/billing', require('./routes/billingRoutes'));
 
+// Healthcheck endpoint
+app.get('/healthcheck', (req, res) => {
+    res.status(200).json({ status: 'ok', message: 'Clinic backend is running.' });
+});
+
 // Connect to MongoDB and start server
 connectDB().then(() => {
     app.listen(process.env.PORT, () => {
         logger.info(`Server running on port ${process.env.PORT}`);
+        console.log(`Backend server running at http://localhost:${process.env.PORT}`);
     });
 });
