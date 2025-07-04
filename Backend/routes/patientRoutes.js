@@ -12,7 +12,7 @@ router.post('/', protect, allowRoles('admin', 'receptionist'), patientController
 router.get('/', protect, patientController.getPatients);
 router.get('/:id', protect, patientController.getPatientById);
 // Only admin and receptionist can update/delete
-router.put('/:id', protect, allowRoles('admin', 'receptionist'), patientController.updatePatient);
+// router.put('/:id', protect, allowRoles('admin', 'receptionist'), patientController.updatePatient); // Moved to backup/patientUpdateRoute.js
 router.delete('/:id', protect, allowRoles('admin', 'receptionist'), patientController.deletePatient);
 
 module.exports = router;

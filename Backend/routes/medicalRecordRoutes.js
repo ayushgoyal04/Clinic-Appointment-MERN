@@ -10,7 +10,7 @@ const { protect, allowRoles } = require('../auth/rbac');
 router.post('/', protect, allowRoles('admin', 'doctor'), medicalRecordController.createMedicalRecord);
 router.get('/', protect, medicalRecordController.getMedicalRecords);
 router.get('/:id', protect, medicalRecordController.getMedicalRecordById);
-router.put('/:id', protect, allowRoles('admin', 'doctor'), medicalRecordController.updateMedicalRecord);
+// router.put('/:id', protect, allowRoles('admin', 'doctor'), medicalRecordController.updateMedicalRecord); // Moved to backup/medicalRecordUpdateRoute.js
 router.delete('/:id', protect, allowRoles('admin', 'doctor'), medicalRecordController.deleteMedicalRecord);
 
 module.exports = router;

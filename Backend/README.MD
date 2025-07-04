@@ -30,12 +30,75 @@ Backend/
 ## API Endpoints
 All endpoints are prefixed with `/api`.
 
+
 ### Patient APIs
 - `POST   /api/patients`                : Register a new patient
 - `GET    /api/patients`                : Get all patients
 - `GET    /api/patients/:id`            : Get patient by ID
-- `PUT    /api/patients/:id`            : Update patient info
 - `DELETE /api/patients/:id`            : Delete patient
+
+### Doctor APIs
+- `POST   /api/doctors`                 : Register a new doctor
+- `GET    /api/doctors`                 : Get all doctors
+- `GET    /api/doctors/:id`             : Get doctor by ID
+- `DELETE /api/doctors/:id`             : Delete doctor
+
+### Appointment APIs
+- `POST   /api/appointments`            : Book appointment (or follow-up)
+- `GET    /api/appointments`            : Get all appointments
+- `GET    /api/appointments/:id`        : Get appointment by ID
+- `DELETE /api/appointments/:id`        : Cancel appointment
+
+### Medical Record APIs
+- `POST   /api/medical-records`         : Add medical record
+- `GET    /api/medical-records`         : Get all medical records
+- `GET    /api/medical-records/:id`     : Get medical record by ID
+- `DELETE /api/medical-records/:id`     : Delete medical record
+
+### Billing APIs
+- `POST   /api/billing`                 : Create bill for appointment
+- `GET    /api/billing`                 : Get all bills
+- `GET    /api/billing/:id`             : Get bill by ID
+- `DELETE /api/billing/:id`             : Delete bill
+
+---
+
+## ⚠️ PUT Endpoints Removed
+All update (PUT) endpoints have been removed from the main codebase for simplicity. Their logic and routes are backed up in the `backup/` folder. If you need to restore update functionality, refer to the corresponding files in `backup/`.
+
+---
+
+## Complete User Flow & API Testing Sequence
+
+1. **Register Users (Admin/Doctor/Receptionist):**
+   - `POST /api/auth/register` (for each user type)
+2. **Login:**
+   - `POST /api/auth/login` (get JWT token)
+3. **Register a Patient:**
+   - `POST /api/patients`
+4. **Register a Doctor:**
+   - `POST /api/doctors`
+5. **Book an Appointment:**
+   - `POST /api/appointments`
+6. **Add Medical Record:**
+   - `POST /api/medical-records`
+7. **Create Bill:**
+   - `POST /api/billing`
+8. **View Data:**
+   - `GET /api/patients`, `/api/doctors`, `/api/appointments`, `/api/medical-records`, `/api/billing`
+9. **View Details:**
+   - `GET /api/patients/:id`, `/api/doctors/:id`, etc.
+10. **Delete Data:**
+   - `DELETE /api/patients/:id`, `/api/doctors/:id`, etc.
+11. **Reports:**
+   - `GET /api/reports/daily-appointments?date=YYYY-MM-DD`
+   - `GET /api/reports/billing?date=YYYY-MM-DD`
+   - `GET /api/reports/doctor-appointments?date=YYYY-MM-DD`
+
+**Note:**
+- All endpoints (except `/auth/register` and `/auth/login`) require authentication (JWT token in headers).
+- Only Admin/Receptionist can create patients/appointments/bills. Only Admin can create doctors. Only Doctor/Admin can add medical records.
+- For update (PUT) operations, see the `backup/` folder.
 
 ### Doctor APIs
 - `POST   /api/doctors`                 : Register a new doctor
@@ -127,3 +190,224 @@ For any new features, always:
 - Add a route for API access
 
 This keeps the codebase modular, testable, and maintainable.
+
+---
+
+# User Flow & API Testing Guide
+
+## Important Note
+**All update (PUT) endpoints have been moved to the `backup/` folder and are NOT part of the main application flow. Do NOT use any routes or logic from the `backup/` folder for normal operation or testing.**
+
+## Complete User Flow (Recommended Sequence)
+
+1. **Register a User (Admin/Doctor/Receptionist)**
+   - **Endpoint:** `POST /api/auth/register`
+   - **Payload Example:**
+     ```json
+     {
+       "name": "Admin User",
+       "email": "admin@clinic.com",
+       "password": "password123",
+       "role": "admin"
+     }
+     ```
+
+2. **Login**
+   - **Endpoint:** `POST /api/auth/login`
+   - **Payload Example:**
+     ```json
+     {
+       "email": "admin@clinic.com",
+       "password": "password123"
+     }
+     ```
+   - **Response:** Contains a JWT token. Use this token as `Authorization: Bearer <token>` for all protected endpoints.
+
+3. **Create a Doctor** (Admin only)
+   - **Endpoint:** `POST /api/doctors`
+   - **Payload Example:**
+     ```json
+     {
+       "first_name": "John",
+       "last_name": "Doe",
+       "specialization": "Cardiology",
+       "phone": "1234567890",
+       "email": "johndoe@clinic.com"
+     }
+     ```
+
+4. **Create a Patient** (Admin/Receptionist)
+   - **Endpoint:** `POST /api/patients`
+   - **Payload Example:**
+     ```json
+     {
+       "first_name": "Jane",
+       "last_name": "Smith",
+       "dob": "1990-01-01",
+       "gender": "Female",
+       "phone": "9876543210",
+       "email": "janesmith@email.com",
+       "address": "123 Main St"
+     }
+     ```
+
+5. **Create an Appointment** (Admin/Receptionist)
+   - **Endpoint:** `POST /api/appointments`
+   - **Payload Example:**
+     ```json
+     {
+       "patient_id": "<PATIENT_ID>",
+       "doctor_id": "<DOCTOR_ID>",
+       "appointment_date": "2025-07-04",
+       "appointment_time": "10:00",
+       "status": "Pending",
+       "notes": "First visit"
+     }
+     ```
+
+6. **Create a Medical Record** (Admin/Doctor)
+   - **Endpoint:** `POST /api/medical-records`
+   - **Payload Example:**
+     ```json
+     {
+       "patient_id": "<PATIENT_ID>",
+       "doctor_id": "<DOCTOR_ID>",
+       "diagnosis": "Hypertension",
+       "prescription": "Medication A",
+       "notes": "Monitor blood pressure",
+       "date_of_visit": "2025-07-04"
+     }
+     ```
+
+7. **Create a Bill** (Admin/Receptionist)
+   - **Endpoint:** `POST /api/billing`
+   - **Payload Example:**
+     ```json
+     {
+       "patient_id": "<PATIENT_ID>",
+       "appointment_id": "<APPOINTMENT_ID>",
+       "amount": 500,
+       "payment_status": "Pending",
+       "payment_date": null
+     }
+     ```
+
+---
+
+## Main Endpoints (with Sample Payloads)
+
+### Auth
+- `POST /api/auth/register` — Register a new user
+- `POST /api/auth/login` — Login and get JWT token
+- `POST /api/auth/logout` — Logout
+- `GET /api/auth/me` — Get current user profile
+
+### Doctors
+- `POST /api/doctors` — Create doctor
+- `GET /api/doctors` — List all doctors
+- `GET /api/doctors?report=summary` — Doctor-wise appointments summary
+- `GET /api/doctors/:id` — Get doctor by ID
+- `DELETE /api/doctors/:id` — Delete doctor
+
+### Patients
+- `POST /api/patients` — Create patient
+- `GET /api/patients` — List all patients
+- `GET /api/patients/:id` — Get patient by ID
+- `DELETE /api/patients/:id` — Delete patient
+
+### Appointments
+- `POST /api/appointments` — Create appointment
+- `GET /api/appointments` — List all appointments
+- `GET /api/appointments/:id` — Get appointment by ID
+- `DELETE /api/appointments/:id` — Delete appointment
+
+### Medical Records
+- `POST /api/medical-records` — Create medical record
+- `GET /api/medical-records` — List all medical records
+- `GET /api/medical-records/:id` — Get medical record by ID
+- `DELETE /api/medical-records/:id` — Delete medical record
+
+### Billing
+- `POST /api/billing` — Create bill
+- `GET /api/billing` — List all bills
+- `GET /api/billing/:id` — Get bill by ID
+- `DELETE /api/billing/:id` — Delete bill
+
+---
+
+## Data Model Reference (Sample Payloads)
+
+### User
+```json
+{
+  "name": "Admin User",
+  "email": "admin@clinic.com",
+  "password": "password123",
+  "role": "admin"
+}
+```
+
+### Doctor
+```json
+{
+  "first_name": "John",
+  "last_name": "Doe",
+  "specialization": "Cardiology",
+  "phone": "1234567890",
+  "email": "johndoe@clinic.com"
+}
+```
+
+### Patient
+```json
+{
+  "first_name": "Jane",
+  "last_name": "Smith",
+  "dob": "1990-01-01",
+  "gender": "Female",
+  "phone": "9876543210",
+  "email": "janesmith@email.com",
+  "address": "123 Main St"
+}
+```
+
+### Appointment
+```json
+{
+  "patient_id": "<PATIENT_ID>",
+  "doctor_id": "<DOCTOR_ID>",
+  "appointment_date": "2025-07-04",
+  "appointment_time": "10:00",
+  "status": "Pending",
+  "notes": "First visit"
+}
+```
+
+### Medical Record
+```json
+{
+  "patient_id": "<PATIENT_ID>",
+  "doctor_id": "<DOCTOR_ID>",
+  "diagnosis": "Hypertension",
+  "prescription": "Medication A",
+  "notes": "Monitor blood pressure",
+  "date_of_visit": "2025-07-04"
+}
+```
+
+### Bill
+```json
+{
+  "patient_id": "<PATIENT_ID>",
+  "appointment_id": "<APPOINTMENT_ID>",
+  "amount": 500,
+  "payment_status": "Pending",
+  "payment_date": null
+}
+```
+
+---
+
+## About the `backup/` Folder
+
+All update (PUT) logic and routes have been moved to the `backup/` folder for reference only. **Do not use any code or endpoints from `backup/` for normal application flow or testing.**
