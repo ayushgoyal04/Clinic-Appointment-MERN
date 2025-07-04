@@ -10,7 +10,7 @@ const { protect, allowRoles } = require('../auth/rbac');
 router.post('/', protect, allowRoles('admin', 'receptionist'), billingController.createBill);
 router.get('/', protect, billingController.getBills);
 router.get('/:id', protect, billingController.getBillById);
-router.put('/:id', protect, allowRoles('admin', 'receptionist'), billingController.updateBill);
+// router.put('/:id', protect, allowRoles('admin', 'receptionist'), billingController.updateBill); // Moved to backup/billingUpdateRoute.js
 router.delete('/:id', protect, allowRoles('admin', 'receptionist'), billingController.deleteBill);
 
 module.exports = router;
