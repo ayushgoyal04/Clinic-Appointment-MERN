@@ -6,8 +6,8 @@ const appointmentController = require('../controllers/appointmentController');
 
 const { protect, allowRoles } = require('../auth/rbac');
 
-// Only receptionist and admin can create appointments
-router.post('/', protect, allowRoles('admin', 'receptionist'), appointmentController.createAppointment);
+// Allow anyone to create appointments (public)
+router.post('/', appointmentController.createAppointment);
 router.get('/', protect, appointmentController.getAppointments);
 router.get('/:id', protect, appointmentController.getAppointmentById);
 // Only receptionist and admin can update/delete

@@ -5,6 +5,14 @@ const connectDB = require('./config/db');
 const logger = require('./config/logger');
 const app = express();
 
+
+// CORS Middleware
+const cors = require('cors');
+app.use(cors({
+    origin: 'http://localhost:8080', // Frontend origin
+    credentials: true
+}));
+
 // Middleware
 app.use(express.json());
 

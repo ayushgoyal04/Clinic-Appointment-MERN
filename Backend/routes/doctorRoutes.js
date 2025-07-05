@@ -8,8 +8,10 @@ const { protect, allowRoles } = require('../auth/rbac');
 
 // Only admin can create/update/delete doctors
 router.post('/', protect, allowRoles('admin'), doctorController.createDoctor);
-router.get('/', protect, doctorController.getDoctors);
-router.get('/:id', protect, doctorController.getDoctorById);
+// Public: List all doctors (no auth required)
+router.get('/', doctorController.getDoctors);
+// Public: Get doctor by ID (no auth required)
+router.get('/:id', doctorController.getDoctorById);
 // router.put('/:id', protect, allowRoles('admin'), doctorController.updateDoctor); // Moved to backup/doctorUpdateRoute.js
 router.delete('/:id', protect, allowRoles('admin'), doctorController.deleteDoctor);
 

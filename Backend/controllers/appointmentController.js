@@ -1,9 +1,30 @@
 // Handles appointment-related requests
 const appointmentService = require('../services/appointmentService');
 
+const patientService = require('../services/patientService');
+
 exports.createAppointment = async (req, res) => {
     try {
-        const appointment = await appointmentService.createAppointment(req.body);
+        let appointmentData = { ...req.body };
+        // If patient object is provided, create patient and use its _id
+        if (req.body.patient && typeof req.body.patient === 'object') {
+            const { first_name, last_name, email, phone } = req.body.patient;
+            // You may want to add more fields as needed
+            const newPatient = await patientService.createPatient({
+                first_name,
+                last_name,
+                email,
+                phone,
+                // Provide dummy/default values for required fields
+                dob: new Date(1970, 0, 1),
+                gender: 'Male',
+                address: 'Not Provided'
+            });
+            appointmentData.patient_id = newPatient._id;
+            delete appointmentData.patient;
+        }
+        // If patient_id is already provided, use as is
+        const appointment = await appointmentService.createAppointment(appointmentData);
         res.status(201).json(appointment);
     } catch (err) {
         res.status(400).json({ error: err.message });

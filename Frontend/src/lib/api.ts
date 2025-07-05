@@ -17,7 +17,9 @@ export const updatePatient = (id, data, token) => axios.put(`${API_BASE}/patient
 export const deletePatient = (id, token) => axios.delete(`${API_BASE}/patients/${id}`, { headers: { Authorization: `Bearer ${token}` } });
 
 // Doctors
-export const getDoctors = (token) => axios.get(`${API_BASE}/doctors`, { headers: { Authorization: `Bearer ${token}` } });
+// Allow fetching doctors with or without a token
+// Always fetch doctors without token (public endpoint)
+export const getDoctors = () => axios.get(`${API_BASE}/doctors`);
 export const getDoctor = (id, token) => axios.get(`${API_BASE}/doctors/${id}`, { headers: { Authorization: `Bearer ${token}` } });
 export const createDoctor = (data, token) => axios.post(`${API_BASE}/doctors`, data, { headers: { Authorization: `Bearer ${token}` } });
 export const updateDoctor = (id, data, token) => axios.put(`${API_BASE}/doctors/${id}`, data, { headers: { Authorization: `Bearer ${token}` } });

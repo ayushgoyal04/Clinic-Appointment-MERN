@@ -23,14 +23,14 @@ const AppointmentForm = () => {
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
 
-  // TODO: Replace with real auth token logic
-  const token = localStorage.getItem('token') || '';
-
   useEffect(() => {
-    getDoctors(token)
+    getDoctors()
       .then(res => setDoctors(res.data))
-      .catch(() => setDoctors([]));
-  }, [token]);
+      .catch((err) => {
+        setDoctors([]);
+        setError('Could not fetch doctors. Please try again later.');
+      });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,7 +53,7 @@ const AppointmentForm = () => {
         appointment_time: formData.time,
         department: formData.department
       };
-      await createAppointment(payload, token);
+      await createAppointment(payload, undefined);
       setSuccess('Appointment booked successfully!');
       setFormData({
         patientFirstName: '',
@@ -66,7 +66,7 @@ const AppointmentForm = () => {
         phone: ''
       });
     } catch (err: any) {
-      setError(err?.response?.data?.error || 'Failed to book appointment.');
+      setError('The clinic will review if an appointment is available or not.');
     } finally {
       setLoading(false);
     }
